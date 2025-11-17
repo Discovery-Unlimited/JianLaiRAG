@@ -86,10 +86,18 @@ class VectorStore:
         vectors = []
         
         for i, chunk in enumerate(chunks):
-            # 生成唯一ID：章节号_块索引
+            # 生成唯一ID：优先使用文件名 + 块索引，避免章节号重复导致冲突
             chapter = chunk.metadata.get('chapter', 'unknown')
             chunk_idx = chunk.metadata.get('chunk_idx', i)
-            chunk_id = f"ch{chapter}_idx{chunk_idx}"
+            filename = chunk.metadata.get('filename')
+
+            if filename:
+                # 使用文件名（去掉扩展名）+ 块索引
+                name_stem = Path(filename).stem.replace(' ', '_')
+                chunk_id = f"{name_stem}_idx{chunk_idx}"
+            else:
+                chunk_id = f"ch{chapter}_idx{chunk_idx}_{i}"
+
             ids.append(chunk_id)
             
             # 文档内容
