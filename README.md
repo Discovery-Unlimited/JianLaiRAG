@@ -46,7 +46,14 @@ Fr5$LtS)KS
 
 先用 `python -m tools.check_gpu_support.py`检查GPU支持情况
 根据CUDA版本安装对应的PyTorch
+如果下载速度慢，可以替换为镜像源：
 
+```bash
+如：
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+替换为：
+pip install torch torchvision --index-url https://mirrors.nju.edu.cn/pytorch/whl/cu130
+```
 
 chromadb卡编译，可以这样安装：
 
@@ -60,14 +67,16 @@ pip install -r requirements.txt
 ## 手动下载模型
 
 ```bash
-# 1. 设置镜像环境变量
+# 1. 安装huggingface_cli
+pip install "huggingface_hub[cli]"
+# 2. 设置镜像环境变量(可选)
 Windowns:
 $env:HF_ENDPOINT="https://hf-mirror.com"
 Linux:
 export HF_ENDPOINT="https://hf-mirror.com"
 
-# 2. 下载模型
-huggingface-cli download BAAI/bge-m3 --local-dir ./models/bge-m3
+# 3. 下载模型
+hf download BAAI/bge-m3 --local-dir ./models/bge-m3
 
 ```
 
