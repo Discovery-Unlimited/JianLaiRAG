@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Optional, Dict
 import sys
 import subprocess
+import pickle
+import hashlib
 
 from src.knowledge_base import DocumentLoader, TextSplitter, VectorStore
 from src.llm import Embedder
@@ -296,6 +298,20 @@ def build_knowledge_base(
     else:
         model_name = embedding_config.get('model_name', 'BAAI/bge-m3')
         logger.info(f"使用配置文件中的模型: {model_name}")
+
+    # sentence-transformers模型优先尝试使用本地缓存目录
+    if not model_name.startswith("ollama://"):
+        local_model_dir = embedding_config.get('local_model_dir', 'models/bge-m3')
+        local_model_path = Path(model_name)
+
+        if local_model_path.exists():
+            model_name = str(local_model_path.resolve())
+            logger.info(f"检测到本地模型路径: {model_name}")
+        elif local_model_dir and Path(local_model_dir).exists():
+            model_name = str(Path(local_model_dir).resolve())
+            logger.info(f"未找到指定模型，改为加载本地缓存模型: {model_name}")
+        else:
+            logger.info("未检测到本地模型目录，将通过HuggingFace自动下载")
     
     logger.info("=" * 60)
     logger.info("开始构建知识库")
@@ -320,6 +336,21 @@ def build_knowledge_base(
     )
     chunks = splitter.split_documents(documents)
     logger.info(f"文本分割完成，共生成 {len(chunks)} 个文本块")
+
+    # 缓存目录与文件（用于在步骤5失败后复用嵌入结果）
+    cache_dir = Path(vector_db_config.get('cache_dir', 'storage/cache'))
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_file = cache_dir / f"{vector_db_config.get('collection_name', 'jianlai_novel')}_embeddings.pkl"
+
+    def build_chunks_signature(chunks_list):
+        hasher = hashlib.md5()
+        for chunk in chunks_list:
+            part = f"{chunk.metadata.get('filename', '')}-{chunk.metadata.get('chapter', '')}-{chunk.metadata.get('chunk_idx', 0)}-{len(chunk.text)}"
+            hasher.update(part.encode('utf-8', errors='ignore'))
+        return hasher.hexdigest()
+
+    chunks_signature = build_chunks_signature(chunks)
+    loaded_from_cache = False
     
     # 3. 初始化嵌入模型
     logger.info("\n[步骤 3/5] 初始化嵌入模型...")
@@ -330,12 +361,42 @@ def build_knowledge_base(
     )
     logger.info(f"嵌入模型初始化完成，向量维度: {embedder.dimension}")
     
-    # 4. 向量化文本块
-    logger.info("\n[步骤 4/5] 向量化文本块...")
-    texts = [chunk.text for chunk in chunks]
-    logger.info(f"开始向量化 {len(texts)} 个文本块...")
-    embeddings = embedder.embed_batch(texts, show_progress=True)
-    logger.info(f"向量化完成，生成 {len(embeddings)} 个向量")
+    # 4. 向量化文本块（支持缓存）
+    cached_embeddings = None
+    if cache_file.exists() and not reset:
+        try:
+            with cache_file.open('rb') as f:
+                cache_data = pickle.load(f)
+            if cache_data.get('signature') == chunks_signature:
+                cached_embeddings = cache_data.get('embeddings')
+                loaded_from_cache = True
+                logger.info(f"检测到缓存嵌入文件，跳过重新向量化: {cache_file}")
+            else:
+                logger.info("缓存签名与当前文本不匹配，将重新计算嵌入")
+        except Exception as e:
+            logger.warning(f"加载嵌入缓存失败，将重新计算: {e}")
+    
+    if cached_embeddings is not None:
+        embeddings = cached_embeddings
+    else:
+        logger.info("\n[步骤 4/5] 向量化文本块...")
+        texts = [chunk.text for chunk in chunks]
+        logger.info(f"开始向量化 {len(texts)} 个文本块...")
+        embeddings = embedder.embed_batch(texts, show_progress=True)
+        logger.info(f"向量化完成，生成 {len(embeddings)} 个向量")
+
+        try:
+            with cache_file.open('wb') as f:
+                pickle.dump({
+                    'signature': chunks_signature,
+                    'embeddings': embeddings
+                }, f)
+            logger.info(f"嵌入结果已缓存到: {cache_file}")
+        except Exception as e:
+            logger.warning(f"写入嵌入缓存失败: {e}")
+    
+    if loaded_from_cache:
+        logger.info("使用缓存嵌入完成步骤 4/5")
     
     # 5. 存储到向量数据库
     logger.info("\n[步骤 5/5] 存储到向量数据库...")
@@ -343,12 +404,19 @@ def build_knowledge_base(
         persist_directory=vector_db_config.get('path', 'storage/vector_db'),
         collection_name=vector_db_config.get('collection_name', 'jianlai_novel')
     )
-    
-    if reset:
-        logger.warning("重置向量数据库...")
-        vector_store.reset()
+
+    logger.warning("清理旧向量集合，准备重建...")
+    vector_store.reset()
     
     vector_store.add_chunks(chunks, embeddings)
+    
+    # 构建成功后清理缓存，避免下次误用旧数据
+    try:
+        if cache_file.exists():
+            cache_file.unlink()
+            logger.info("已清理临时嵌入缓存文件")
+    except Exception as e:
+        logger.warning(f"清理嵌入缓存失败，请手动删除 {cache_file}: {e}")
     
     # 显示统计信息
     info = vector_store.get_collection_info()
