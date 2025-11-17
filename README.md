@@ -44,6 +44,28 @@ http://60.28.24.169/d/bfd7dce337984acb99c3/
 Fr5$LtS)KS
 ```
 
+chromadb卡编译，可以这样安装：
+
+```bash
+pip install chromadb --no-build-isolation
+pip install -r requirements.txt
+
+```
+
+## 手动下载模型
+
+```bash
+# 1. 设置镜像环境变量
+Windowns:
+$env:HF_ENDPOINT="https://hf-mirror.com"
+Linux:
+export HF_ENDPOINT="https://hf-mirror.com"
+
+# 2. 下载模型
+huggingface-cli download BAAI/bge-m3 --local-dir ./models/bge-m3
+
+```
+
 ## 项目结构
 
 [项目结构](Docs/RAG_Solution.md)
