@@ -4,6 +4,9 @@ storage/vector_db/
 # 原始数据
 data/raw/
 
+# 模型文件夹
+models/
+
 # Python缓存文件
 __pycache__/
 *.py[cod]
