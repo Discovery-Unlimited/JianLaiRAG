@@ -1,6 +1,9 @@
 # 向量数据库目录
 storage/vector_db/
 
+# 原始数据
+data/raw/
+
 # Python缓存文件
 __pycache__/
 *.py[cod]
