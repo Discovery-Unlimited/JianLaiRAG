@@ -38,22 +38,20 @@ pip install -r requirements.txt
 
 ## 使用方法
 
-（待补充使用说明）
+data下载地址：
+```
+http://60.28.24.169/d/bfd7dce337984acb99c3/
+Fr5$LtS)KS
+```
 
 ## 项目结构
 
-```
-JianLaiRAG/
-├── README.md
-└── （待补充项目结构）
-```
+[项目结构](Docs/RAG_Solution.md)
 
 ## 开发计划
 
-- [ ] 核心检索模块
-- [ ] 生成模块集成
-- [ ] 文档处理模块
-- [ ] API 接口
+- [ ] 知识库构建
+- [ ] 问答查询
 - [ ] Web 界面
 
 ## 贡献指南
