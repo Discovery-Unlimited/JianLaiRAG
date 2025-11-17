@@ -84,6 +84,8 @@ JianLaiRAG/
 ├── config/                 # 配置文件目录
 │   └── settings.yaml      # 存储模型路径、API密钥、参数等
 │
+├── tools/                 # 工具目录
+|
 ├── data/                  # 数据目录
 │   ├── raw/              # 存放原始小说文件
 │   │   └── my_novel.txt
