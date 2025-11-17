@@ -1,0 +1,32 @@
+# RAG系统配置文件
+
+# 嵌入模型配置
+embedding:
+  model_name: "ollama://bge-m3"  # BGE-M3模型，通过sentence-transformers使用
+  # 如果使用ollama，可以设置为: "ollama://bge-m3"
+  device: "cuda"  # 可选: "cuda" 或 "cpu"
+  batch_size: 32  # 批量向量化的大小
+
+# 向量数据库配置
+vector_db:
+  type: "chroma"
+  path: "storage/vector_db"  # Chroma数据库存储路径
+  collection_name: "jianlai_novel"  # 集合名称
+
+# 数据源配置
+data:
+  raw_path: "data/raw"  # 原始小说文件目录
+  processed_path: "data/processed"  # 处理后的中间数据目录（可选）
+
+# 文本分割配置
+text_splitter:
+  chunk_size: 500  # 每个文本块的最大字符数
+  chunk_overlap: 50  # 相邻文本块之间的重叠字符数
+  split_by_chapter: true  # 是否按章节分割
+  min_chunk_size: 100  # 最小文本块大小（小于此值不分割）
+
+# 日志配置
+logging:
+  level: "INFO"  # 日志级别: DEBUG, INFO, WARNING, ERROR
+  file: "build_kb.log"  # 日志文件路径
+
