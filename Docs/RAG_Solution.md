@@ -79,14 +79,14 @@ RAG系统的实施方案。从系统架构、核心逻辑、目录结构和关�
 基于上述逻辑，一个清晰的项目目录结构如下：
 
 ```
-novel_rag_system/
+JianLaiRAG/
 │
 ├── config/                 # 配置文件目录
 │   └── settings.yaml      # 存储模型路径、API密钥、参数等
 │
 ├── data/                  # 数据目录
 │   ├── raw/              # 存放原始小说文件
-│   │   └── my_novel.pdf
+│   │   └── my_novel.txt
 │   └── processed/        # 处理后的中间数据（可选）
 │
 ├── src/                  # 核心源代码
