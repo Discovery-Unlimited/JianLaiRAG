@@ -44,9 +44,14 @@ http://60.28.24.169/d/bfd7dce337984acb99c3/
 Fr5$LtS)KS
 ```
 
+先用 `python -m tools.check_gpu_support.py`检查GPU支持情况
+根据CUDA版本安装对应的PyTorch
+
+
 chromadb卡编译，可以这样安装：
 
 ```bash
+pip install setuptools
 pip install chromadb --no-build-isolation
 pip install -r requirements.txt
 
