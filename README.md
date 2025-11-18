@@ -102,3 +102,16 @@ hf download BAAI/bge-m3 --local-dir ./models/bge-m3
 
 （待补充联系方式）
 
+## 方向
+
+```mermaid
+graph TD
+    A[目标] --> B[数据处理];
+    B --> C{选择技术方案};
+    C --> D[RAG];
+    C --> E[全参数微调];
+    D --> F[向量化与检索];
+    E --> G[模型训练];
+    F & G --> H[评估迭代];
+    H --> I[部署上线];
+```
