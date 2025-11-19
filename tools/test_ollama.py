@@ -7,9 +7,13 @@ def test_ollama_connection(model_name="gpt-oss:120b-cloud"):
     headers = {
         "Content-Type": "application/json"
     }
+    user_prompt = input("请输入提示词 (默认: '休谟是谁？'): ").strip()
+    if not user_prompt:
+        user_prompt = "休谟是谁？"
+
     data = {
         "model": model_name,
-        "prompt": "你是谁？",
+        "prompt": user_prompt,
         "stream": False
     }
 
