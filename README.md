@@ -80,6 +80,12 @@ hf download BAAI/bge-m3 --local-dir ./models/bge-m3
 
 ```
 
+## 嵌入模型加载策略
+
+- 默认配置读取 `config/settings.yaml` 中的 `embedding` 段落。
+- 程序会**优先使用 `models/bge-m3` 本地缓存**（或 `local_model_dir` 指定的路径），不存在时才会自动通过 HuggingFace 下载 `BAAI/bge-m3`。
+- 如需替换模型，只需将文件放入 `models/` 子目录并在配置中更新 `model_name`/`local_model_dir`。
+
 ## 项目结构
 
 [项目结构](Docs/RAG_Solution.md)

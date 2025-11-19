@@ -126,8 +126,8 @@ JianLaiRAG/
     *   **备选**：对于超长章节，使用`递归分割`（先按章，再按节/段）或`滑动窗口`。
 
 2.  **嵌入模型**
-    *   **本地部署**：`https://ollama.com/library/bge-m3`。中文社区中公认的佼佼者，效果非常好，且免费。`text2vec-bge-large-chinese` 作为备选
-    *   **云端API**：OpenAI的 `text-embedding-3-small`。效果稳定，但需要付费和网络。
+    *   **本地优先**：将 `BAAI/bge-m3`（或其他 SentenceTransformer 模型）下载到 `models/<name>`，系统会自动从本地目录加载，避免重复联网。
+    *   **自动兜底**：若本地缺失，将透明地通过 HuggingFace 下载同名模型；如需切换，请调整 `config/settings.yaml` 的 `embedding` 配置。
 
 3.  **向量数据库**
     *   **轻量级/入门**：`Chroma`。极其简单，无需外部服务，与Python无缝集成，非常适合本项目。

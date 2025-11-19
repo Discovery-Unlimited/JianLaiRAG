@@ -21,7 +21,8 @@ class Retriever:
         # 初始化嵌入模型
         embed_config = config.get("embedding", {})
         self.embedder = Embedder(
-            model_name=embed_config.get("model_name", "ollama://bge-m3"),
+            model_name=embed_config.get("model_name", "BAAI/bge-m3"),
+            local_model_dir=embed_config.get("local_model_dir", "models/bge-m3"),
             device=embed_config.get("device"),
             batch_size=embed_config.get("batch_size", 32)
         )

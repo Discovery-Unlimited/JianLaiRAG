@@ -2,8 +2,8 @@
 
 # 嵌入模型配置
 embedding:
-  model_name: "ollama://bge-m3"  # BGE-M3模型，通过sentence-transformers使用
-  # 如果使用ollama，可以设置为: "ollama://bge-m3"
+  model_name: "BAAI/bge-m3"  # 默认HuggingFace模型名称
+  local_model_dir: "models/bge-m3"  # 优先从本地models目录加载
   device: "cuda"  # 可选: "cuda" 或 "cpu"
   batch_size: 32  # 批量向量化的大小
 
