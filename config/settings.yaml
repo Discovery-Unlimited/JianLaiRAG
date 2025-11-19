@@ -30,3 +30,11 @@ logging:
   level: "INFO"  # 日志级别: DEBUG, INFO, WARNING, ERROR
   file: "build_kb.log"  # 日志文件路径
 
+# LLM生成模型配置
+llm:
+  model_name: "gpt-oss:120b-cloud"  # 用户指定的生成模型
+  base_url: "http://localhost:11434"  # Ollama API地址
+  temperature: 0.7  # 生成温度
+  max_tokens: 2048  # 最大生成长度
+
+
