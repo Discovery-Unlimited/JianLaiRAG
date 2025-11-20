@@ -7,6 +7,7 @@
 
 import os
 import re
+import logging
 from pathlib import Path
 from typing import List, Dict, Optional
 from dataclasses import dataclass
@@ -25,16 +26,18 @@ class Document:
 class DocumentLoader:
     """文档加载器"""
     
-    def __init__(self, encoding: str = "utf-8"):
+    def __init__(self, encoding: str = "utf-8", logger: Optional[logging.Logger] = None):
         """
         初始化文档加载器
         
         Args:
             encoding: 文件编码，默认为utf-8
+            logger: 日志记录器，如果为None则创建默认logger
         """
         self.encoding = encoding
         # 匹配章节号的正则表达式，支持"第X章"、"第XXX章"等格式
         self.chapter_pattern = re.compile(r'第(\d+)章')
+        self.logger = logger or logging.getLogger(__name__)
     
     def load_file(self, file_path: str) -> Optional[Document]:
         """
@@ -82,7 +85,7 @@ class DocumentLoader:
             return Document(content=content, metadata=metadata)
             
         except Exception as e:
-            print(f"加载文件失败 {file_path}: {e}")
+            self.logger.warning(f"加载文件失败 {file_path}: {e}")
             return None
     
     def load_directory(self, directory_path: str, pattern: str = "*.txt") -> List[Document]:
@@ -103,7 +106,7 @@ class DocumentLoader:
         documents = []
         txt_files = sorted(directory.glob(pattern))
         
-        print(f"找到 {len(txt_files)} 个TXT文件")
+        self.logger.info(f"找到 {len(txt_files)} 个TXT文件")
         
         for file_path in txt_files:
             doc = self.load_file(file_path)
@@ -113,7 +116,7 @@ class DocumentLoader:
         # 按章节号排序
         documents.sort(key=lambda x: x.metadata.get('chapter', 0) or 0)
         
-        print(f"成功加载 {len(documents)} 个文档")
+        self.logger.info(f"成功加载 {len(documents)} 个文档")
         return documents
     
     def extract_chapter_number(self, filename: str) -> Optional[int]:

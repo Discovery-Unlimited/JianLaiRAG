@@ -7,6 +7,7 @@
 
 from pathlib import Path
 from typing import List, Union, Optional
+import logging
 
 import numpy as np
 import torch
@@ -21,7 +22,8 @@ class Embedder:
         model_name: str = "BAAI/bge-m3",
         local_model_dir: Optional[str] = "models/bge-m3",
         device: Optional[str] = None,
-        batch_size: int = 32
+        batch_size: int = 32,
+        logger: Optional[logging.Logger] = None
     ):
         """
         初始化嵌入模型
@@ -31,6 +33,7 @@ class Embedder:
             local_model_dir: 本地优先加载的目录（若存在则直接使用）
             device: 设备类型，"cuda"或"cpu"，如果为None则自动选择
             batch_size: 批量处理的大小
+            logger: 日志记录器，如果为None则创建默认logger
         """
         self.model_name = model_name
         self.local_model_dir = local_model_dir
@@ -38,6 +41,7 @@ class Embedder:
         self.model = None
         self._model_source = None
         self._embedding_dim = None
+        self.logger = logger or logging.getLogger(__name__)
         
         # 自动选择设备
         if device is None:
@@ -68,24 +72,24 @@ class Embedder:
         try:
             resolved_model = self._resolve_model_source()
             self._model_source = resolved_model
-            print(f"正在加载嵌入模型: {resolved_model}")
+            self.logger.info(f"正在加载嵌入模型: {resolved_model}")
             
             if self.device == "cuda" and not torch.cuda.is_available():
-                print("⚠️  警告：要求使用CUDA，但当前环境不可用，自动切换为CPU")
+                self.logger.warning("⚠️  警告：要求使用CUDA，但当前环境不可用，自动切换为CPU")
                 self.device = "cpu"
             
             self.model = SentenceTransformer(resolved_model, device=self.device)
             self._embedding_dim = self.model.get_sentence_embedding_dimension()
-            print(f"模型加载完成（来源: {resolved_model}），设备: {self.device}")
+            self.logger.info(f"模型加载完成（来源: {resolved_model}），设备: {self.device}")
             
             if self.device == "cuda":
                 try:
                     test_tensor = torch.randn(1).to(self.device)
-                    print(f"✅ GPU验证成功: {test_tensor.device}")
+                    self.logger.info(f"✅ GPU验证成功: {test_tensor.device}")
                 except Exception as e:
-                    print(f"⚠️  GPU验证失败: {e}")
+                    self.logger.warning(f"⚠️  GPU验证失败: {e}")
         except Exception as e:
-            print(f"加载模型失败: {e}")
+            self.logger.error(f"加载模型失败: {e}")
             raise
     
     def embed(self, texts: Union[str, List[str]]) -> np.ndarray:
